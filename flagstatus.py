@@ -24,16 +24,20 @@ status_context = {
 
 
 def get_page(url: str) -> str:
-    request = requests.get(url)
+    try:
+        request = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        return ""
+
     return request.text
 
 
-def extract_status_line(text: str) -> str:
-    def is_html_comment(l: str) -> bool:
-        return l.strip().startswith(HTML_COMMENT)
+def find_status_line(text: str) -> str:
+    def is_html_comment() -> bool:
+        return line.strip().startswith(HTML_COMMENT)
 
     for line in text.split("\r\n"):
-        if MARKER_1 in line and not is_html_comment(line):
+        if MARKER_1 in line and not is_html_comment():
             return line
 
     return ""
@@ -50,7 +54,7 @@ def get_status(status_line: str) -> Status:
 
 
 if __name__ == '__main__':
-    status = get_status(extract_status_line(get_page(URL)))
+    status = get_status(find_status_line(get_page(URL)))
 
     root = Tk()
     window_title = f"Flag Status {date.today()}"
@@ -59,10 +63,9 @@ if __name__ == '__main__':
         file_name, title_suffix = status_context[status]
         status_image = ImageTk.PhotoImage(Image.open(file_name))
         label = ttk.Label(root, image=status_image)
-        window_title += title_suffix
+        root.title("".join([window_title, title_suffix]))
     else:
         label = ttk.Label(root, text="Unable to determine status.")
     label.pack()
 
-    root.title(window_title)
     root.mainloop()
