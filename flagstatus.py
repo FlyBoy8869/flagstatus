@@ -34,7 +34,7 @@ def get_page(url: str) -> str:
 
 def find_status_line(text: str) -> str:
     def is_html_comment() -> bool:
-        return line.strip().startswith(HTML_COMMENT)
+        return line.lstrip().startswith(HTML_COMMENT)
 
     for line in text.split("\r\n"):
         if MARKER_1 in line and not is_html_comment():
