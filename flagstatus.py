@@ -1,3 +1,8 @@
+"""
+    >>> find_status_line('First line\\r\\n<!-- Comment Line\\r\\nNext line in comment\\r\\nLast line in comment-->\\r\\nLast line of text icon-flag')
+    'Last line of text icon-flag'
+"""
+
 from datetime import date
 from enum import Enum
 from tkinter import *
@@ -8,7 +13,8 @@ import requests
 URL = "https://www.nh.gov/index.htm"
 MARKER_1 = "icon-flag"
 MARKER_2 = "full"
-HTML_COMMENT = "<!--"
+HTML_COMMENT_START = "<!--"
+HTML_COMMENT_END = "-->"
 
 
 class Status(Enum):
@@ -18,8 +24,8 @@ class Status(Enum):
 
 
 status_context = {
-    Status.FULLMAST: ("resources/images/fullmast.png", " - Full Mast"),
-    Status.HALFMAST: ("resources/images/halfmast.png", " - Half Mast"),
+    Status.FULLMAST: ("resources/images/flag_full.png", " - Full Mast"),
+    Status.HALFMAST: ("resources/images/flag_half.png", " - Half Mast"),
 }
 
 
@@ -33,12 +39,20 @@ def get_page(url: str) -> str:
 
 
 def find_status_line(text: str) -> str:
-    def is_html_comment() -> bool:
-        return line.lstrip().startswith(HTML_COMMENT)
+    def skip_html_comment(a_line):
+        if a_line.lstrip().startswith(HTML_COMMENT_START):
+            if not a_line.rstrip().endswith(HTML_COMMENT_END):
+                while not next(line_iterator).rstrip().endswith(HTML_COMMENT_END):
+                    continue
 
-    for line in text.split("\r\n"):
-        if MARKER_1 in line and not is_html_comment():
-            return line
+        return a_line
+
+    line_iterator = iter(text.split("\r\n"))
+
+    for line in line_iterator:
+        b_line = skip_html_comment(line)
+        if MARKER_1 in b_line:
+            return b_line
 
     return ""
 
