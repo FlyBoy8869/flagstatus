@@ -7,6 +7,8 @@ from datetime import date
 from enum import Enum
 from tkinter import *
 from tkinter import ttk
+from typing import Iterable, Iterator
+
 from PIL import ImageTk, Image
 import requests
 
@@ -38,29 +40,51 @@ def get_page(url: str) -> str:
     return request.text
 
 
+def _is_comment_start(line: str):
+    return line.lstrip().startswith(HTML_COMMENT_START)
+
+
+def _is_comment_end(line: str):
+    return line.rstrip().endswith(HTML_COMMENT_END)
+
+
+def _is_single_line_comment(line: str):
+    return _is_comment_start(line) and _is_comment_end(line)
+
+
+def _is_start_multiline_comment(line: str):
+    return _is_comment_start(line) and not _is_comment_end(line)
+
+
+def _skip_intervening_comment_lines(it: Iterator[str]):
+    while not _is_comment_end(next(it)):
+        continue
+
+
+def _skip_html_comments(text):
+    # explicitly create iterator as it will be manually manipulated
+    document = iter(text.split("\r\n"))
+    for line in document:
+        if _is_single_line_comment(line):
+            continue
+        if _is_start_multiline_comment(line):
+            _skip_intervening_comment_lines(document)
+
+        yield line
+
+
 def find_status_line(text: str) -> str:
-    def skip_html_comment(a_line):
-        if a_line.lstrip().startswith(HTML_COMMENT_START):
-            if not a_line.rstrip().endswith(HTML_COMMENT_END):
-                while not next(line_iterator).rstrip().endswith(HTML_COMMENT_END):
-                    continue
-
-        return a_line
-
-    line_iterator = iter(text.split("\r\n"))
-
-    for line in line_iterator:
-        b_line = skip_html_comment(line)
-        if MARKER_1 in b_line:
-            return b_line
+    for line in _skip_html_comments(text):
+        if MARKER_1 in line:
+            return line
 
     return ""
 
 
-def get_status(status_line: str) -> Status:
+def get_status() -> Status:
+    status_line = find_status_line(get_page(URL))
     if not status_line:
         return Status.UNDEFINED
-
     if MARKER_2 in status_line:
         return Status.FULLMAST
 
@@ -68,7 +92,7 @@ def get_status(status_line: str) -> Status:
 
 
 if __name__ == '__main__':
-    status = get_status(find_status_line(get_page(URL)))
+    status = get_status()
 
     root = Tk()
     window_title = f"Flag Status {date.today()}"
@@ -79,7 +103,7 @@ if __name__ == '__main__':
         label = ttk.Label(root, image=status_image)
         root.title("".join([window_title, title_suffix]))
     else:
-        label = ttk.Label(root, text="Unable to determine status.")
+        label = ttk.Label(root, text="\nUnable to determine status.\n\n")
     label.pack()
 
     root.mainloop()
