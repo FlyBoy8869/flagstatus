@@ -7,10 +7,10 @@ from datetime import date
 from enum import Enum
 from tkinter import *
 from tkinter import ttk
-from typing import Iterable, Iterator
+from typing import Iterator
 
-from PIL import ImageTk, Image
 import requests
+from PIL import Image, ImageTk
 
 URL = "https://www.nh.gov/index.htm"
 MARKER_1 = "icon-flag"
@@ -28,6 +28,7 @@ class Status(Enum):
 status_context = {
     Status.FULLMAST: ("resources/images/flag_full.png", " - Full Mast"),
     Status.HALFMAST: ("resources/images/flag_half.png", " - Half Mast"),
+    Status.UNDEFINED: ("resources/images/undetermined.png", " - Unable to determine"),
 }
 
 
@@ -96,14 +97,10 @@ if __name__ == '__main__':
 
     root = Tk()
     window_title = f"Flag Status {date.today()}"
-
-    if status != Status.UNDEFINED:
-        file_name, title_suffix = status_context[status]
-        status_image = ImageTk.PhotoImage(Image.open(file_name))
-        label = ttk.Label(root, image=status_image)
-        root.title("".join([window_title, title_suffix]))
-    else:
-        label = ttk.Label(root, text="\nUnable to determine status.\n\n")
+    file_name, title_suffix = status_context[status]
+    status_image = ImageTk.PhotoImage(Image.open(file_name))
+    label = ttk.Label(root, image=status_image)
+    root.title("".join([window_title, title_suffix]))
     label.pack()
 
     root.mainloop()
