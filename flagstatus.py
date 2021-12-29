@@ -22,13 +22,13 @@ HTML_COMMENT_END = "-->"
 class Status(Enum):
     FULLMAST = 1
     HALFMAST = 2
-    UNDEFINED = 3
+    UNDETERMINED = 3
 
 
 status_context = {
     Status.FULLMAST: ("resources/images/flag_full.png", " - Full Mast"),
     Status.HALFMAST: ("resources/images/flag_half.png", " - Half Mast"),
-    Status.UNDEFINED: ("resources/images/undetermined.png", " - Unable to determine"),
+    Status.UNDETERMINED: ("resources/images/undetermined.png", " - Unable to determine"),
 }
 
 
@@ -58,6 +58,7 @@ def _is_start_multiline_comment(line: str):
 
 
 def _skip_intervening_comment_lines(it: Iterator[str]):
+    # automatically positions iterator at the line after a comment
     while not _is_comment_end(next(it)):
         continue
 
@@ -85,7 +86,7 @@ def find_status_line(text: str) -> str:
 def get_status() -> Status:
     status_line = find_status_line(get_page(URL))
     if not status_line:
-        return Status.UNDEFINED
+        return Status.UNDETERMINED
     if MARKER_2 in status_line:
         return Status.FULLMAST
 
