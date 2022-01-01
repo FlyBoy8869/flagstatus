@@ -1,0 +1,6 @@
+attrs
+icecream
+pillow
+pytest
+requests
+rich
