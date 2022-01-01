@@ -1,8 +1,3 @@
-"""
-    >>> find_status_line('First line\\r\\n<!-- Comment Line\\r\\nNext line in comment\\r\\nLast line in comment-->\\r\\nLast line of text icon-flag')
-    'Last line of text icon-flag'
-"""
-
 from datetime import date
 from enum import Enum
 from tkinter import *
@@ -32,7 +27,8 @@ status_context = {
 }
 
 
-def get_page(url: str) -> str:
+def _get_page(url: str) -> str:
+    """"Return the 'url' text if successful, or else an empty string"""
     try:
         request = requests.get(url)
     except requests.exceptions.ConnectionError:
@@ -68,14 +64,14 @@ def _skip_html_comments(text):
     document = iter(text.split("\r\n"))
     for line in document:
         if _is_single_line_comment(line):
-            continue
+            continue  # allows skipping consecutive comment lines
         if _is_start_multiline_comment(line):
             _skip_intervening_comment_lines(document)
 
         yield line
 
 
-def find_status_line(text: str) -> str:
+def _find_status_line(text: str) -> str:
     for line in _skip_html_comments(text):
         if MARKER_1 in line:
             return line
@@ -84,7 +80,7 @@ def find_status_line(text: str) -> str:
 
 
 def get_status() -> Status:
-    status_line = find_status_line(get_page(URL))
+    status_line = _find_status_line(_get_page(URL))
     if not status_line:
         return Status.UNDETERMINED
     if MARKER_2 in status_line:
@@ -93,7 +89,7 @@ def get_status() -> Status:
     return Status.HALFMAST
 
 
-if __name__ == '__main__':
+def main():
     status = get_status()
 
     root = Tk()
@@ -105,3 +101,7 @@ if __name__ == '__main__':
     label.pack()
 
     root.mainloop()
+
+
+if __name__ == '__main__':
+    main()
