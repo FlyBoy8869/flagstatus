@@ -113,7 +113,7 @@ def main():
     status = get_status()
 
     root = Tk()
-    window_title = f"Flag Status {date.today()}"
+    window_title = f"Flag Status for {date.today().strftime('%A, %B %d, %Y')}"
     file_name, title_suffix = status_context[status]
     status_image = ImageTk.PhotoImage(Image.open(file_name))
     label = ttk.Label(root, image=status_image)
