@@ -27,6 +27,26 @@ status_context = {
 }
 
 
+# function borrowed from Honest Abe
+# https://stackoverflow.com/questions/3352918/how-to-center-a-window-on-the-screen-in-tkinter
+def center(win):
+    """
+    centers a tkinter window
+    :param win: the main window or Toplevel window to center
+    """
+    win.update_idletasks()
+    width = win.winfo_width()
+    frm_width = win.winfo_rootx() - win.winfo_x()
+    win_width = width + 2 * frm_width
+    height = win.winfo_height()
+    titlebar_height = win.winfo_rooty() - win.winfo_y()
+    win_height = height + titlebar_height + frm_width
+    x = win.winfo_screenwidth() // 2 - win_width // 2
+    y = win.winfo_screenheight() // 2 - win_height // 2
+    win.geometry('+{}+{}'.format(x, y))
+    win.deiconify()
+
+
 def _get_page(url: str) -> str:
     """"Return the 'url' text if successful, or else an empty string"""
     try:
@@ -99,6 +119,7 @@ def main():
     label = ttk.Label(root, image=status_image)
     root.title("".join([window_title, title_suffix]))
     label.pack()
+    center(root)
 
     root.mainloop()
 
