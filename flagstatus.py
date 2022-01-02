@@ -13,6 +13,9 @@ MARKER_2 = "full"
 HTML_COMMENT_START = "<!--"
 HTML_COMMENT_END = "-->"
 
+# date format e.g., Sunday, January 01, 2022
+DATE_FORMAT = '%A, %B %d, %Y'
+
 
 class Status(Enum):
     FULLMAST = 1
@@ -113,7 +116,7 @@ def main():
     status = get_status()
 
     root = Tk()
-    window_title = f"Flag Status for {date.today().strftime('%A, %B %d, %Y')}"
+    window_title = f"Flag Status for {date.today().strftime(DATE_FORMAT)}"
     file_name, title_suffix = status_context[status]
     status_image = ImageTk.PhotoImage(Image.open(file_name))
     label = ttk.Label(root, image=status_image)
