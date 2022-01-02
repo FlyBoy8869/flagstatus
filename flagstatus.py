@@ -51,7 +51,7 @@ def center(win):
 
 
 def _get_page(url: str) -> str:
-    """"Return the 'url' text if successful, or else an empty string"""
+    """"Return the webpage text of 'url' if successful, or else an empty string"""
     try:
         request = requests.get(url)
     except requests.exceptions.ConnectionError:
