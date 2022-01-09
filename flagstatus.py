@@ -2,10 +2,11 @@ from datetime import date
 from enum import Enum
 from tkinter import *
 from tkinter import ttk
-from typing import Iterator
 
 import requests
 from PIL import Image, ImageTk
+
+from tkinter_helpers import center
 
 URL = "https://www.nh.gov/index.htm"
 MARKER_1 = "icon-flag"
@@ -28,26 +29,6 @@ status_context = {
     Status.HALFMAST: ("resources/images/flag_half.png", " - Half Mast"),
     Status.UNDETERMINED: ("resources/images/undetermined.png", " - Unable to determine"),
 }
-
-
-# function borrowed from Honest Abe
-# https://stackoverflow.com/questions/3352918/how-to-center-a-window-on-the-screen-in-tkinter
-def center(win):
-    """
-    centers a tkinter window
-    :param win: the main window or Toplevel window to center
-    """
-    win.update_idletasks()
-    width = win.winfo_width()
-    frm_width = win.winfo_rootx() - win.winfo_x()
-    win_width = width + 2 * frm_width
-    height = win.winfo_height()
-    titlebar_height = win.winfo_rooty() - win.winfo_y()
-    win_height = height + titlebar_height + frm_width
-    x = win.winfo_screenwidth() // 2 - win_width // 2
-    y = win.winfo_screenheight() // 2 - win_height // 2
-    win.geometry('+{}+{}'.format(x, y))
-    win.deiconify()
 
 
 def _get_page(url: str) -> str:
@@ -76,20 +57,22 @@ def _is_start_multiline_comment(line: str):
     return _is_comment_start(line) and not _is_comment_end(line)
 
 
-def _skip_intervening_comment_lines(it: Iterator[str]):
-    # automatically positions iterator at the line after a comment
-    while not _is_comment_end(next(it)):
-        continue
-
-
 def _skip_html_comments(text):
+    def _skip_intervening_comment_lines():
+        while not _is_comment_end(next(document)):
+            continue
+        next(document)  # position iterator at line right after the closing comment line
+
     # explicitly create iterator as it will be manually manipulated
     document = iter(text.split("\r\n"))
     for line in document:
+        if not line.strip():
+            continue
         if _is_single_line_comment(line):
             continue  # allows skipping consecutive comment lines
         if _is_start_multiline_comment(line):
-            _skip_intervening_comment_lines(document)
+            _skip_intervening_comment_lines()
+            continue
 
         yield line
 
